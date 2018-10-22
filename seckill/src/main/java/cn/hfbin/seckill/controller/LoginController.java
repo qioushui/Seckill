@@ -35,12 +35,17 @@ public class LoginController {
     RedisService redisService;
     @Autowired
     UserService userService;
+    //用户登录的方法
     @RequestMapping("/login")
     @ResponseBody
     public Result<User> doLogin(HttpServletResponse response, HttpSession session , @Valid LoginParam loginParam) {
-        Result<User> login = userService.login(loginParam);
-        if (login.isSuccess()){
-            CookieUtil.writeLoginToken(response,session.getId());
+        //从数据库中，通过手机号码取出用户的信息（包括加密的信息）
+    	Result<User> login = userService.login(loginParam);
+       //登录成功
+    	if (login.isSuccess()){
+    		//获取sessionid,写入cookie中（名字：seckill_login_token，值：sessionid）
+    		CookieUtil.writeLoginToken(response,session.getId());
+    		//单点登录（1.key 的前缀，2.sesionid key,3.存入的值，4.设置过期的时间）
             redisService.set(UserKey.getByName , session.getId() ,login.getData(), Const.RedisCacheExtime.REDIS_SESSION_EXTIME );
         }
         return login;

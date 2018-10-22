@@ -55,17 +55,21 @@
 <script type="text/javascript" th:src="@{/js/common.js}"></script>
 <script>
     function login() {
-        $("#loginForm").validate({
-            submitHandler: function (form) {
+       //jquery 的验证的方法
+    	$("#loginForm").validate({
+            	//验证通过，执行的方法
+    		submitHandler: function (form) {
                 doLogin();
             }
         });
     }
-
+	//表单验证通过后，执行的方法
     function doLogin() {
-        g_showLoading();
+    	//展示loading的方法
+		g_showLoading();
 
         var inputPass = $("#password").val();
+        //加密的盐（字符串9d5b364d）
         var salt = g_passsword_salt;
         var str = "" + salt.charAt(0) + salt.charAt(2) + inputPass + salt.charAt(5) + salt.charAt(4);
         var password = md5(str);
@@ -78,7 +82,9 @@
                 password: password
             },
             success: function (data) {
-                layer.closeAll();
+                //关闭loading
+            	layer.closeAll();
+                
                 if (data.code == 0) {
                     layer.msg("成功");
                     window.location.href = "/goods/list";

@@ -181,12 +181,15 @@
 
     $(function () {
         //countDown();
+       //静态化页面加载的方法
         getDetail();
     });
-
+    //静态化页面加载的方法
     function getDetail() {
-        var goodsId = g_getQueryString("goodsId");
-        $.ajax({
+     // common.js 中的方法（取出访问的里面的参数）
+    	var goodsId = g_getQueryString("goodsId");
+     //通过异步加载，请求出参数
+     $.ajax({
             url: "/goods/detail/" + goodsId,
             type: "GET",
             success: function (data) {

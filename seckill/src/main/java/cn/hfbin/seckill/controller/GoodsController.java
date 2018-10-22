@@ -58,6 +58,7 @@ public class GoodsController {
     	 return "goods_list";*/
         //修改后
         String html = redisService.get(GoodsKey.getGoodsList, "", String.class);
+        System.out.println("缓存到redis中的url:"+html);
         if(!StringUtils.isEmpty(html)) {
             return html;
         }
@@ -70,6 +71,7 @@ public class GoodsController {
         if(!StringUtils.isEmpty(html)) {
             redisService.set(GoodsKey.getGoodsList, "", html , Const.RedisCacheExtime.GOODS_LIST);
         }
+        System.out.println("html中的url:"+html);
         return html;
     }
     @RequestMapping("/to_detail2/{goodsId}")
@@ -126,7 +128,8 @@ public class GoodsController {
 
         GoodsBo goods = seckillGoodsService.getseckillGoodsBoByGoodsId(goodsId);
         if(goods == null){
-            return Result.error(CodeMsg.NO_GOODS);
+           //没有产品
+        	return Result.error(CodeMsg.NO_GOODS);
         }else {
             model.addAttribute("goods", goods);
             long startAt = goods.getStartDate().getTime();

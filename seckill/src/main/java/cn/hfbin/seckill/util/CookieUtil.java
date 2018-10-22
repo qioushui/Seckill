@@ -25,6 +25,7 @@ public class CookieUtil {
         if(cks != null){
             for(Cookie ck : cks){
                 log.info("read cookieName:{},cookieValue:{}",ck.getName(),ck.getValue());
+                //判断获取的token，里面是否有这个这个信息
                 if(StringUtils.equals(ck.getName(),COOKIE_NAME)){
                     log.info("return cookieName:{},cookieValue:{}",ck.getName(),ck.getValue());
                     return ck.getValue();
@@ -40,9 +41,10 @@ public class CookieUtil {
     //c:A.hfbin.cn/test/cc    cookie:domain=A.hfbin.cn;path="/test/cc"
     //d:A.hfbin.cn/test/dd    cookie:domain=A.hfbin.cn;path="/test/dd"
     //e:A.hfbin.cn/test       cookie:domain=A.hfbin.cn;path="/test"
-
+    //设置Cookie
     public static void writeLoginToken(HttpServletResponse response, String token){
-        Cookie ck = new Cookie(COOKIE_NAME,token);
+    	//设置 seckill_login_token
+    	Cookie ck = new Cookie(COOKIE_NAME,token);
         ck.setDomain(COOKIE_DOMAIN);
         ck.setPath("/");//代表设置在根目录
         ck.setHttpOnly(true);
@@ -50,6 +52,7 @@ public class CookieUtil {
         //如果这个maxage不设置的话，cookie就不会写入硬盘，而是写在内存。只在当前页面有效。
         ck.setMaxAge(60 * 60 * 24 * 365);//如果是-1，代表永久
         log.info("write cookieName:{},cookieValue:{}",ck.getName(),ck.getValue());
+        System.out.println("登录是否判断是否"+ck.getName()+ck.getValue());
         response.addCookie(ck);
     }
 

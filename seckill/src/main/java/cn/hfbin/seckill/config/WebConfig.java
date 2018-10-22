@@ -15,11 +15,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import javax.servlet.Filter;
 
 /**
- * Created by: HuangFuBin
+ * Created by: zhangsheng
  * Date: 2018/7/11
  * Time: 20:58
  * Such description:
  */
+//要想这个拦截器工作，我们要重写WebMvcConfigurerAdapter中的addInterceptors方法，将我们的拦截器添加进去就可以了：
 @Configuration
 public class WebConfig extends WebMvcConfigurerAdapter {
     @Autowired
@@ -36,12 +37,14 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 
     @Bean("myFilter")
     public Filter uploadFilter() {
-        return new SessionExpireFilter();
+       //设置sessionExpireFilter
+    	return new SessionExpireFilter();
     }
 
     @Bean
     public FilterRegistrationBean uploadFilterRegistration() {
-        FilterRegistrationBean registration = new FilterRegistrationBean();
+       //配置sessionExpireFilter
+    	FilterRegistrationBean registration = new FilterRegistrationBean();
         registration.setFilter(new DelegatingFilterProxy("myFilter"));
         registration.addUrlPatterns("/**");
         registration.setName("MyFilter");

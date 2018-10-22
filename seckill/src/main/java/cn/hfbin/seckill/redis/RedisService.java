@@ -23,7 +23,9 @@ public class RedisService {
 			 jedis =  jedisPool.getResource();
 			 //生成真正的key
 			 String realKey  = prefix.getPrefix() + key;
+			//通过生成的key,拿到缓存里面的值
 			 String  str = jedis.get(realKey);
+			//转化成对象 
 			 T t =  stringToBean(str, clazz);
 			 return t;
 		 }finally {
@@ -58,9 +60,11 @@ public class RedisService {
 			 String realKey  = prefix.getPrefix() + key;
 			 if(exTime == 0) {
 			 	 //直接保存
+				 
 				 jedis.set(realKey, str);
 			 }else {
 			 	 //设置过期时间
+				 System.out.println("realKey"+realKey+"exTime"+exTime+"str"+str);
 				 jedis.setex(realKey, exTime, str);
 			 }
 			 return true;

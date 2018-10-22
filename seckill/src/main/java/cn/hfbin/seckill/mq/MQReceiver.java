@@ -42,7 +42,7 @@ public class MQReceiver {
 	    	if(stock <= 0) {
 	    		return;
 	    	}
-	    	//判断是否已经秒杀到了
+	    	//判断是否已经秒杀到了（防止重复买到）
 	    	SeckillOrder order = seckillOrderService.getSeckillOrderByUserIdGoodsId(user.getId(), goodsId);
 	    	if(order != null) {
 	    		return;

@@ -61,6 +61,7 @@ public class SeckillController implements InitializingBean {
         if (goodsList == null) {
             return;
         }
+        System.out.println("初始化");
         for (GoodsBo goods : goodsList) {
             redisService.set(GoodsKey.getSeckillGoodsStock, "" + goods.getId(), goods.getStockCount(), Const.RedisCacheExtime.GOODS_LIST);
             localOverMap.put(goods.getId(), false);
@@ -107,33 +108,39 @@ public class SeckillController implements InitializingBean {
         String loginToken = CookieUtil.readLoginToken(request);
         User user = redisService.get(UserKey.getByName, loginToken, User.class);
         if (user == null) {
-            return Result.error(CodeMsg.USER_NO_LOGIN);
+           //用户没有登录
+        	return Result.error(CodeMsg.USER_NO_LOGIN);
         }
         //验证path
         boolean check = seckillOrderService.checkPath(user, goodsId, path);
         if (!check) {
-            return Result.error(CodeMsg.REQUEST_ILLEGAL);
+        	//请求非法
+        	return Result.error(CodeMsg.REQUEST_ILLEGAL);
         }
-        //内存标记，减少redis访问
+        //内存标记，减少redis访问（高并发的减少对redis的访问）
         boolean over = localOverMap.get(goodsId);
         if (over) {
-            return Result.error(CodeMsg.MIAO_SHA_OVER);
+            //商品秒杀完毕
+        	return Result.error(CodeMsg.MIAO_SHA_OVER);
         }/**/
-        //预减库存
+        //预减库存（此处是高并发的重点，初学者 容易错）
+        //这个地方，因为redis是单线程，操作命令，线程安全的，所以此方法可取
         long stock = redisService.decr(GoodsKey.getSeckillGoodsStock, "" + goodsId);//10
         if (stock < 0) {
             localOverMap.put(goodsId, true);
             return Result.error(CodeMsg.MIAO_SHA_OVER);
         }
-        //判断是否已经秒杀到了
+        //判断是否已经秒杀到了（判断是否重复购买）
         SeckillOrder order = seckillOrderService.getSeckillOrderByUserIdGoodsId(user.getId(), goodsId);
         if (order != null) {
-            return Result.error(CodeMsg.REPEATE_MIAOSHA);
+            //不能重复秒杀
+        	return Result.error(CodeMsg.REPEATE_MIAOSHA);
         }
         //入队列
         SeckillMessage mm = new SeckillMessage();
         mm.setUser(user);
         mm.setGoodsId(goodsId);
+       // Amqp发送消息的方法
         mqSender.sendSeckillMessage(mm);
         return Result.success(0);//排队中
         /*//判断库存
@@ -172,6 +179,7 @@ public class SeckillController implements InitializingBean {
         long result = seckillOrderService.getSeckillResult((long) user.getId(), goodsId);
         return Result.success(result);
     }
+    //要想这个注解能够生效，必须要配置拦截器AuthorityInterceptor(接口限流的注解)
     @AccessLimit(seconds=5, maxCount=5, needLogin=true)
     @RequestMapping(value = "/path", method = RequestMethod.GET)
     @ResponseBody
@@ -182,6 +190,7 @@ public class SeckillController implements InitializingBean {
         if (user == null) {
             return Result.error(CodeMsg.USER_NO_LOGIN);
         }
+       //通过后台，将path的进行处理（调用秒杀的参数）
         String path = seckillOrderService.createMiaoshaPath(user, goodsId);
         return Result.success(path);
     }
